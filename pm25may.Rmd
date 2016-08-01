@@ -1,0 +1,122 @@
+---
+title: "PM2.5 5月各測站記錄"
+author: "noootown"
+date: "2016年8月2日"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 本篇記錄 
+從學姐那邊拿到5月份各PM2.5的airbox資料。老師和學長要我分析哪些測站常開，哪些測站常關。藉此我們可以提醒不常開的測站，可以多多貢獻數據。
+
+## 讀檔
+
+```{r readdata, warning=F, error=F, include=FALSE}
+library(dplyr)
+library(ggplot2)
+data <- read.table(file="./Downloads/airbox-20160501-20160531.txt", header=FALSE, sep="\t");
+colnames(data) <- c("Time","Id","PM25","Temp","Humidity","Longtitude","Latitude");
+data$f_time <-  as.POSIXct(strptime(data$Time, "%Y-%m-%dT%H:%M:%SZ",tz="Etc/GMT+8"))
+data2 <- tbl_df(data = data)
+
+head(data)
+```
+
+## 算總共開了幾次
+
+首先，第一步就是把各個測站開了幾次都算出來。接著要畫到表上去。
+
+```{r count_num, warning=F, error=F}
+#count number of data by Id
+counts_data <- data2 %>% group_by(Id) %>% summarise(data_count = n())
+```
+
+接著，分別畫出由高到低，和由低到高的兩張圖，各取前40個測站。
+```{r counts_data_high, warning=F, error=F}
+counts_data_high <- 
+  counts_data %>%
+  arrange(desc(data_count)) %>%
+  head(n=40)
+counts_data_high$Id <- 
+  factor(counts_data_high$Id,levels = unique(counts_data_high$Id))
+ggplot(counts_data_high, aes(x=Id,y=data_count)) +
+  geom_point() + 
+  theme(axis.text.x = element_text(angle = 90)) +
+  ggtitle("資料筆數 vs 測站 (高到低)")
+```
+
+```{r count_data_low, warning=F, error=F}
+counts_data_low <-
+  counts_data %>%
+  arrange(data_count) %>%
+  head(n=40)
+counts_data_low$Id <-
+  factor(counts_data_low$Id,levels = unique(counts_data_low$Id))
+ggplot(counts_data_low, aes(x=Id,y=data_count)) +
+  geom_point() +
+  theme(axis.text.x = element_text(angle = 90))+
+  ggtitle("資料筆數 vs 測站 (低到高)")
+```
+
+## 算總共開了幾天
+
+算完次數後，接著來算開著的天數。
+
+```{r count_date_by_id, warning=F, error=F}
+#count number of data by Id & Date 
+counts_date <- 
+  data2 %>% 
+  group_by(Id,as.Date(Time)) %>% 
+  summarise(count = n())
+colnames(counts_date)[2] <- "Date"
+#count Date of data by Id
+counts_date_by_Id <- 
+  counts_date %>% 
+  group_by(Id) %>% 
+  summarise(date_count=n())
+```
+
+接著，分別畫出由高到低，和由低到高的兩張圖，各取前40個測站。
+```{r counts_date_by_id_high, warning=F, error=F}
+counts_date_by_Id_high <- 
+  counts_date_by_Id %>% 
+  arrange(desc(date_count))
+counts_date_by_Id_high$Id <- 
+  factor(counts_date_by_Id_high$Id,levels = unique(counts_date_by_Id_high$Id))
+ggplot(counts_date_by_Id_high, aes(x=Id,y=date_count)) +
+  geom_point() + 
+  theme(axis.text.x = element_text(angle = 90)) + 
+  ggtitle("收集天數 vs 測站 (高到低)")
+```
+
+```{r count_date_by_id_low, warning=F, error=F}
+counts_date_by_Id_low <- 
+  counts_date_by_Id %>% 
+  arrange(date_count) %>% 
+  head(n=40)
+counts_date_by_Id_low$Id <- 
+  factor(counts_date_by_Id_low$Id,levels = unique(counts_date_by_Id_low$Id))
+ggplot(counts_date_by_Id_low, aes(x=Id,y=date_count)) + 
+  geom_point() + 
+  theme(axis.text.x = element_text(angle = 90)) + 
+  ggtitle("收集天數 vs 測站 (低到高)")
+```
+
+## 畫一下各測站開的日期分布
+
+```{r count_date_high_low, warning=F, error=F}
+counts_date_high <- 
+  data2 %>% 
+  mutate(Date=as.Date(Time)) %>% 
+  select(Id,Date) %>% 
+  inner_join(counts_date_by_Id,by="Id") %>% 
+  arrange(desc(date_count)) %>% 
+  distinct() %>% 
+  mutate(Id=factor(.$Id,levels = unique(.$Id)))
+ggplot(counts_date_high,aes(Id,Date)) + 
+  geom_point() + 
+  theme(axis.text.x = element_text(angle = 90))
+```
