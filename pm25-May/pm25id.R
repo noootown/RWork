@@ -1,6 +1,6 @@
 library(dplyr)
 library(ggplot2)
-data <- read.table(file="./Downloads/airbox-20160501-20160531.txt", header=FALSE, sep="\t");
+data <- read.table(file="./airbox-20160501-20160531.txt", header=FALSE, sep="\t");
 colnames(data) <- c("Time","Id","PM25","Temp","Humidity","Longtitude","Latitude");
 data$f_time <-  as.POSIXct(strptime(data$Time, "%Y-%m-%dT%H:%M:%SZ",tz="Etc/GMT+8"))
 

@@ -128,6 +128,28 @@ $(document).ready(function () {
 </div>
 <div class="section level2">
 <h2>讀檔</h2>
+<pre class="r"><code>library(dplyr)
+library(ggplot2)
+data &lt;- read.table(file=&quot;./airbox-20160501-20160531.txt&quot;, header=FALSE, sep=&quot;\t&quot;);
+colnames(data) &lt;- c(&quot;Time&quot;,&quot;Id&quot;,&quot;PM25&quot;,&quot;Temp&quot;,&quot;Humidity&quot;,&quot;Longtitude&quot;,&quot;Latitude&quot;);
+data$f_time &lt;-  as.POSIXct(strptime(data$Time, &quot;%Y-%m-%dT%H:%M:%SZ&quot;,tz=&quot;Etc/GMT+8&quot;))
+data2 &lt;- tbl_df(data = data)
+
+head(data)</code></pre>
+<pre><code>##                   Time           Id PM25  Temp Humidity Longtitude
+## 1 2016-05-03T11:53:34Z 28C2DDDD3FE1   22 26.25       65     25.062
+## 2 2016-05-03T11:59:29Z 28C2DDDD3FE1   21 26.37       64     25.062
+## 3 2016-05-03T12:05:24Z 28C2DDDD3FE1   16 26.50       64     25.062
+## 4 2016-05-03T12:11:19Z 28C2DDDD3FE1   15 26.75       63     25.062
+## 5 2016-05-03T12:17:14Z 28C2DDDD3FE1   14 26.87       63     25.062
+## 6 2016-05-03T12:23:09Z 28C2DDDD3FE1   15 27.00       63     25.062
+##   Latitude              f_time
+## 1  121.451 2016-05-03 11:53:34
+## 2  121.451 2016-05-03 11:59:29
+## 3  121.451 2016-05-03 12:05:24
+## 4  121.451 2016-05-03 12:11:19
+## 5  121.451 2016-05-03 12:17:14
+## 6  121.451 2016-05-03 12:23:09</code></pre>
 </div>
 <div class="section level2">
 <h2>算總共開了幾次</h2>
